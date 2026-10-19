@@ -1,0 +1,4 @@
+id,nome,concelho,latitude,longitude,email_contacto
+2,Braga            ,Braga           ,41.5454        ,-8.4265        ,Maria.Costa@Hotmail.Com
+4,Esposende        ,Esposende       ,41.5320        ,-8.7810        ,                       
+6,Guimarães        ,Guimarães       ,41.4425        ,-8.2918        ,Rui.Santos@Gmail       

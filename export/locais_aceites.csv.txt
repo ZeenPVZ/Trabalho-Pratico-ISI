@@ -1,4 +1,3 @@
 id,nome,concelho,latitude,longitude,email_contacto,result
 1,Barcelos         ,Barcelos        ,41.5388        ,-8.6151        ,Joao.Silva@Gmail.Com   ,Y
-2,Braga            ,Braga           ,41.5454        ,-8.4265        ,Maria.Costa@Hotmail.Com,Y
 5,Póvoa De Varzim  ,Póvoa De Varzim ,41.3804        ,-8.7608        ,Ana.Pereira@Sapo.Pt    ,Y

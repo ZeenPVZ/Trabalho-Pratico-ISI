@@ -1,134 +1,132 @@
-# Monitorização da Qualidade do Ar e Meteorologia (ETL com Pentaho Kettle)
+# Monitorização da Qualidade do Ar e Meteorologia
 
-Trabalho Prático I de **Integração de Sistemas de Informação** (2026/27)
-Licenciatura em Engenharia de Sistemas Informáticos, Escola Superior de Tecnologia do IPCA
+Trabalho Prático I de **Integração de Sistemas de Informação** (2026/27) — Licenciatura em Engenharia de Sistemas Informáticos, Escola Superior de Tecnologia do IPCA.
 
-**Autor:** `Afonso Ferreira` (n.º `27981`)
-**Ferramenta ETL:** Pentaho Data Integration (Kettle / Spoon)
-**Base de dados:** PostgreSQL
+**Autor:** Afonso Ferreira (n.º 27981)  
+**ETL:** Pentaho Data Integration (Spoon / Kettle)  
+**Base de dados:** PostgreSQL (`qualidade_ar`)
 
----
+## Objetivo
 
-## Descrição
+O projeto integra dados meteorológicos e de qualidade do ar para vários locais. O fluxo lê os locais de um CSV, consulta as APIs Open-Meteo, limpa e valida os dados de entrada, cruza as medições por local e hora e grava os resultados no PostgreSQL. Uma segunda saída agrega as medições por local e dia.
 
-Este projeto implementa um processo **ETL (Extract, Transform, Load)** que recolhe dados meteorológicos e de qualidade do ar para vários locais do Minho, limpa e valida a informação, cruza as duas fontes e carrega o resultado numa base de dados, em ficheiros exportados e num dashboard.
+## Fluxo ETL implementado
 
-O objetivo é demonstrar a integração de dados vindos de **fontes e formatos heterogéneos**, com validação, normalização, anonimização, orquestração e alertas automáticos quando a qualidade do ar é má.
+```text
+locais.csv
+   │
+   ▼
+T3_limpeza_locais ──► locais_deduplicados.csv
+   │                         │
+   ├──► locais_aceites.csv    ├──► T1_extract_meteo ──► stg_meteo
+   └──► locais_rejeitados.csv└──► T2_extract_qualidade_ar ──► stg_qualidade_ar
+                                                               │
+                                                               ▼
+                                                        T4_transformacao
+                                                         ├──► medicoes
+                                                         └──► resumo_diario
 
-## Arquitetura
-
+J_pipeline_principal: T3 → T1 → T2 → T4
 ```
- FASE 1: EXTRACT              FASE 2: TRANSFORM                FASE 3: LOAD
-┌──────────────────┐     ┌─────────────────────────┐     ┌──────────────────────┐
-│ locais.csv       │     │ Limpeza (nulos, dups)   │     │ PostgreSQL           │
-│ limites.xml/csv  │ ──► │ Regex e normalização    │ ──► │ Exportação CSV/JSON  │
-│ API meteorologia │     │ Anonimização de emails  │     │ SFTP, email, alertas │
-│ API qualidade ar │     │ Join, lookup, índice    │     │ Dashboard (Grafana)  │
-└──────────────────┘     │ Agregações diárias      │     └──────────────────────┘
-                         └─────────────────────────┘
-                     Orquestração: Job principal + logs
-```
+
+### Transformações e Job
+
+| Ficheiro | Função | Estado |
+|---|---|---|
+| `transformacoes/T3_limpeza_locais.ktr` | Lê `data/locais.csv`, ordena e remove duplicados, valida dados e emails, e exporta ficheiros deduplicados, aceites e rejeitados. | Executado |
+| `transformacoes/T1_extract_meteo.ktr` | Usa os locais deduplicados para consultar a API meteorológica e carregar temperatura e humidade em `stg_meteo`. | Executado |
+| `transformacoes/T2_extract_qualidade_ar.ktr` | Consulta a API de qualidade do ar e carrega PM10, PM2.5, NO₂ e O₃ em `stg_qualidade_ar`. | Executado |
+| `transformacoes/T4_transformacao.ktr` | Junta as tabelas de staging por local e data/hora; carrega `medicoes` e calcula o resumo diário em `resumo_diario`. | Executado |
+| `transformacoes/J_pipeline_principal.kjb` | Orquestra T3, T1, T2 e T4, pela ordem indicada. | Executado com sucesso |
 
 ## Fontes de dados
 
-| Fonte | Formato | Tipo |
+| Fonte | Formato | Utilização |
 |---|---|---|
-| `data/locais.csv` (locais, coordenadas, email de contacto) | CSV | Ficheiro local |
-| `data/limites.xml` (limites de referência por poluente) | XML | Ficheiro local |
-| [Open-Meteo Weather API](https://open-meteo.com/en/docs) | JSON | API REST |
-| [Open-Meteo Air Quality API](https://open-meteo.com/en/docs/air-quality-api) | JSON | API REST |
+| `data/locais.csv` | CSV | Lista de locais, coordenadas e dados de contacto usados no processo. |
+| [Open-Meteo Weather API](https://open-meteo.com/en/docs) | JSON via REST | Temperatura e humidade por local e hora. |
+| [Open-Meteo Air Quality API](https://open-meteo.com/en/docs/air-quality-api) | JSON via REST | PM10, PM2.5, NO₂ e O₃ por local e hora. |
 
-As APIs são gratuitas e não requerem chave de acesso.
+As APIs Open-Meteo utilizadas não requerem chave de acesso.
 
-## O que o projeto demonstra
+## Base de dados
 
-- **Formatos:** CSV, JSON e XML (leitura e exportação)
-- **Fontes:** ficheiros locais e APIs REST
-- **Limpeza e validação:** valores nulos, remoção de duplicados, validação de intervalos
-- **Expressões regulares:** normalização de nomes, validação de emails
-- **Anonimização:** mascaramento de emails (`j***@gmail.com`)
-- **Cruzamento:** joins e lookups entre meteorologia, qualidade do ar e limites
-- **Cálculos:** índice de qualidade do ar (Bom / Moderado / Mau)
-- **Agregações:** médias, máximos e mínimos diários
-- **Persistência:** PostgreSQL com chaves únicas para evitar duplicados
-- **Orquestração:** Job principal com tratamento de erros e logs
-- **Notificações:** email de alerta e envio por SFTP
-- **Visualização:** dashboard com os resultados
+A base de dados usada é `qualidade_ar`, através da ligação Spoon `PostgreSQL_qualidade_ar`. O processo utiliza as seguintes tabelas:
 
-## Estrutura do repositório
+- **`stg_meteo`** — dados meteorológicos extraídos: local, data/hora, temperatura e humidade.
+- **`stg_qualidade_ar`** — dados de qualidade do ar extraídos: local, data/hora e poluentes.
+- **`medicoes`** — resultado do cruzamento das duas fontes, com chave única em `(local, data_hora)`.
+- **`resumo_diario`** — agregação por `(local, data)`, incluindo temperatura média, mínima e máxima, PM2.5 médio e máximo, PM10 médio e estado.
+- **`log_execucoes`** — tabela existente na base de dados; o Job atual não está documentado como escrevendo nesta tabela.
 
-```
+Na última execução confirmada, `medicoes` continha **252 registos** e `resumo_diario` **21 registos**. Estes valores são uma referência da execução observada e podem variar com os dados devolvidos pelas APIs.
+
+## Estrutura do projeto
+
+```text
 .
-├── data/              # Ficheiros de entrada (locais.csv, limites.xml)
-├── transformacoes/    # Transformações do Kettle (.ktr)
-├── jobs/              # Jobs do Kettle (.kjb)
-├── sql/               # Scripts SQL (criação de tabelas)
-├── export/            # Ficheiros gerados pelo processo
-├── logs/              # Registos de execução
-├── docs/              # Relatório e capturas de ecrã
+├── data/
+│   ├── locais.csv
+│   └── limites.xml
+├── export/
+│   ├── locais_deduplicados.csv
+│   ├── locais_aceites.csv
+│   └── locais_rejeitados.csv
+├── transformacoes/
+│   ├── J_pipeline_principal.kjb
+│   ├── T1_extract_meteo.ktr
+│   ├── T2_extract_qualidade_ar.ktr
+│   ├── T3_limpeza_locais.ktr
+│   └── T4_transformacao.ktr
 └── README.md
 ```
 
-## Transformações e Jobs
-
-| Ficheiro | Descrição | Estado |
-|---|---|---|
-| `T1_extract_meteo.ktr` | Lê os locais, constrói o URL e extrai a meteorologia (JSON) | Concluído |
-| `T2_extract_qualidade_ar.ktr` | Extrai PM10, PM2.5, NO2 e O3 por local e hora (JSON) | Concluído |
-| `T3_limpeza_locais.ktr` | Limpeza, validação com Regex, anonimização e ramo de rejeitados | Em curso |
-| `T4_transformacao.ktr` | Join, lookup dos limites, índice de qualidade e agregações | Por fazer |
-| `T5_carga_bd.ktr` | Carga no PostgreSQL | Por fazer |
-| `J_pipeline_principal.kjb` | Job que orquestra tudo, com logs e alertas | Por fazer |
-
-## Modelo de dados (PostgreSQL)
-
-Base de dados: `qualidade_ar`
-
-- **`medicoes`**: `local`, `data_hora`, `temperatura`, `humidade`, `pm2_5`, `pm10`, `no2`, `o3`, `indice` (chave única em `local` + `data_hora`)
-- **`resumo_diario`**: `local`, `data`, `temp_media`, `pm2_5_media`, `pm2_5_max`, `pm10_media`, `estado` (chave única em `local` + `data`)
-- **`log_execucoes`**: `data_execucao`, `estado`, `mensagem`
-
-O script de criação das tabelas está em `sql/criar_tabelas.sql`.
+`data/limites.xml` existe na pasta de dados, mas não está ligado ao fluxo ETL descrito acima. Não há atualmente um dashboard documentado neste repositório.
 
 ## Como executar
 
 ### Requisitos
-- Java JDK 17 (ou o exigido pela versão do PDI usada)
-- [Pentaho Data Integration (Community Edition)](https://pentaho.com/)
-- PostgreSQL 14 ou superior, com o driver JDBC do PostgreSQL na pasta `lib` do PDI
-- Ligação à Internet (para as APIs)
 
-### Passos
-1. Clonar o repositório:
-   ```bash
-   git clone <URL_DO_REPOSITORIO>
-   ```
-2. Criar a base de dados `qualidade_ar` no PostgreSQL e executar `sql/criar_tabelas.sql`.
-3. Abrir o Spoon e configurar a conexão PostgreSQL (`localhost`, porta `5432`, base `qualidade_ar`).
-4. Ajustar os caminhos dos ficheiros de entrada em `data/` nas transformações, se necessário.
-5. Abrir e executar `jobs/J_pipeline_principal.kjb`.
+- Pentaho Data Integration / Spoon instalado.
+- PostgreSQL instalado e acessível.
+- Ligação à Internet para consultar as APIs.
+- Tabelas de staging e destino criadas na base de dados `qualidade_ar`.
 
-> **Nota:** as credenciais (base de dados, email, SFTP) não estão incluídas no repositório. Devem ser configuradas localmente.
+### Preparação e execução
 
-## Dashboard
+1. Abra no Spoon os ficheiros da pasta `transformacoes/`.
+2. Configure a ligação `PostgreSQL_qualidade_ar` com os dados do seu PostgreSQL.
+3. Confirme os caminhos dos ficheiros de entrada e saída nas transformações, em particular `data/locais.csv` e os CSV da pasta `export/`. Os ficheiros `.ktr` guardados podem conter caminhos absolutos do computador onde foram criados; altere-os se executar o projeto noutro local.
+4. Confirme que as tabelas `stg_meteo`, `stg_qualidade_ar`, `medicoes` e `resumo_diario` existem e têm colunas compatíveis com as transformações. O T1 e o T2 voltam a carregar as respetivas tabelas de staging.
+5. Execute `transformacoes/J_pipeline_principal.kjb` no Spoon.
+6. Verifique os registos em `medicoes` e `resumo_diario` no pgAdmin ou através de consultas SQL.
 
-`<Captura de ecrã do dashboard>`
+As credenciais do PostgreSQL não são incluídas neste README. Configure-as localmente no Spoon.
 
-## Notas e limitações
+## Verificação dos resultados
 
-- Os limites de qualidade do ar usados são **valores simplificados** para fins académicos. Para uso real, devem ser confirmados com as fontes oficiais (OMS / UE).
-- Os dados do ficheiro `locais.csv` contêm **erros propositados** (espaços, maiúsculas, duplicados, emails inválidos) para demonstrar as operações de limpeza.
+Para contar os registos das tabelas finais no pgAdmin:
 
-## Trabalhos futuros
+```sql
+SELECT 'medicoes' AS tabela, COUNT(*) AS registos
+FROM public.medicoes
+UNION ALL
+SELECT 'resumo_diario' AS tabela, COUNT(*) AS registos
+FROM public.resumo_diario;
+```
 
-- Integração de streaming de sensores via MQTT / Node-RED
-- Geração de relatório diário em PDF
-- Mais locais e mais poluentes
-- Agendamento automático da execução do Job
+As restrições únicas impedem registos repetidos para a mesma chave. Se executar manualmente T4 novamente sem limpar ou atualizar os dados de destino, poderão surgir erros de chave duplicada.
+
+## Limitações e trabalho futuro
+
+- O ficheiro `limites.xml` ainda não participa no fluxo atual; não é calculado um índice de qualidade do ar com base nesse ficheiro.
+- O Job guarda os ficheiros `.ktr` através de caminhos locais absolutos, pelo que estes podem ter de ser ajustados noutro computador.
+- Dashboard, alertas por email, envio por SFTP e anonimização de emails não estão implementados no fluxo documentado.
+- Melhorias possíveis: tornar os caminhos relativos, definir uma estratégia de atualização/recarga das tabelas finais, integrar os limites de referência e criar visualizações dos resumos.
 
 ## Referências
 
-- Open-Meteo, *Weather Forecast API*: https://open-meteo.com/en/docs (acedido a 12/10/2026)
-- Open-Meteo, *Air Quality API*: https://open-meteo.com/en/docs/air-quality-api (acedido a 12/10/2026)
-- Pentaho Data Integration, documentação oficial
-- PostgreSQL, documentação oficial: https://www.postgresql.org/docs/
+- Open-Meteo, [Weather Forecast API](https://open-meteo.com/en/docs).
+- Open-Meteo, [Air Quality API](https://open-meteo.com/en/docs/air-quality-api).
+- Pentaho Data Integration, documentação oficial.
+- PostgreSQL, [documentação oficial](https://www.postgresql.org/docs/).
