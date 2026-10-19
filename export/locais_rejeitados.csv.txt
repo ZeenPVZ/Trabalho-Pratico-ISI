@@ -1,0 +1,4 @@
+idsnomesconcelhoslatitudeslongitudesemail_contactos"result"
+3s"Viana Do Castelo "s"Viana Do Castelo"s41.6918        s-8.8345        sEmail_invalido         sN
+4s"Esposende        "s"Esposende       "s41.5320        s-8.7810        ssN
+6s"Guimarães        "s"Guimarães       "s41.4425        s-8.2918        s"Rui.Santos@Gmail       "sN

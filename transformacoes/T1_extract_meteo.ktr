@@ -464,7 +464,7 @@
       <method>none</method>
       <schema_name/>
     </partitioning>
-    <filename>C:\Users\Afonso\OneDrive - Instituto Politécnico do Cávado e do Ave\Desktop\Trabalho Prátco ISI\data\locais.csv</filename>
+    <filename>C:\Users\Afonso\OneDrive - Instituto Politécnico do Cávado e do Ave\Desktop\Trabalho-Pratico-ISI\data\locais.csv</filename>
     <filename_field/>
     <rownum_field/>
     <include_filename>N</include_filename>
