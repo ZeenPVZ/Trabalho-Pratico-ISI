@@ -6,6 +6,8 @@ Trabalho Prático I de **Integração de Sistemas de Informação** (2026/27) �
 **ETL:** Pentaho Data Integration (Spoon / Kettle)  
 **Base de dados:** PostgreSQL (`qualidade_ar`)
 
+Representação videográfica do trabalho prático: https://youtu.be/5Dmj7uK0YDw
+
 ## Objetivo
 
 O projeto integra dados meteorológicos e de qualidade do ar para vários locais. O fluxo lê os locais de um CSV, consulta as APIs Open-Meteo, limpa e valida os dados de entrada, cruza as medições por local e hora e grava os resultados no PostgreSQL. Uma segunda saída agrega as medições por local e dia.
