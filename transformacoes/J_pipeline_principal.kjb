@@ -309,7 +309,7 @@
       <attributes_kjc/>
     </entry>
     <entry>
-      <name>Transformation</name>
+      <name>T3</name>
       <description/>
       <type>TRANS</type>
       <attributes/>
@@ -348,7 +348,7 @@
       <attributes_kjc/>
     </entry>
     <entry>
-      <name>Transformation 2</name>
+      <name>T1</name>
       <description/>
       <type>TRANS</type>
       <attributes/>
@@ -387,7 +387,7 @@
       <attributes_kjc/>
     </entry>
     <entry>
-      <name>Transformation 3</name>
+      <name>T2</name>
       <description/>
       <type>TRANS</type>
       <attributes/>
@@ -426,7 +426,7 @@
       <attributes_kjc/>
     </entry>
     <entry>
-      <name>Transformation 4</name>
+      <name>T4</name>
       <description/>
       <type>TRANS</type>
       <attributes/>
@@ -480,7 +480,7 @@
   <hops>
     <hop>
       <from>Start</from>
-      <to>Transformation</to>
+      <to>T3</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -488,8 +488,8 @@
       <unconditional>Y</unconditional>
     </hop>
     <hop>
-      <from>Transformation</from>
-      <to>Transformation 2</to>
+      <from>T3</from>
+      <to>T1</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -497,8 +497,8 @@
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Transformation 2</from>
-      <to>Transformation 3</to>
+      <from>T1</from>
+      <to>T2</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -506,8 +506,8 @@
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Transformation 3</from>
-      <to>Transformation 4</to>
+      <from>T2</from>
+      <to>T4</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
       <enabled>Y</enabled>
@@ -515,7 +515,7 @@
       <unconditional>N</unconditional>
     </hop>
     <hop>
-      <from>Transformation 4</from>
+      <from>T4</from>
       <to>Success</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>

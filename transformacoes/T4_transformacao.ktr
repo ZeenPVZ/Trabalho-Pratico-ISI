@@ -430,7 +430,7 @@
     <created_date>2026/10/19 14:19:42.530</created_date>
     <modified_user>-</modified_user>
     <modified_date>2026/10/19 14:19:42.530</modified_date>
-    <key_for_session_key/>
+    <key_for_session_key>H4sIAAAAAAAA/wMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
   <notepads>
@@ -458,6 +458,10 @@
       </attribute>
       <attribute>
         <code>IS_CLUSTERED</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>MSSQL_DOUBLE_DECIMAL_SEPARATOR</code>
         <attribute>N</attribute>
       </attribute>
       <attribute>
@@ -503,6 +507,85 @@
       <enabled>Y</enabled>
     </hop>
   </order>
+  <step>
+    <name>Group by</name>
+    <type>GroupBy</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <all_rows>N</all_rows>
+    <ignore_aggregate>N</ignore_aggregate>
+    <field_ignore/>
+    <directory>%%java.io.tmpdir%%</directory>
+    <prefix>grp</prefix>
+    <add_linenr>N</add_linenr>
+    <linenr_fieldname/>
+    <give_back_row>N</give_back_row>
+    <group>
+      <field>
+        <name>data</name>
+      </field>
+      <field>
+        <name>local</name>
+      </field>
+    </group>
+    <fields>
+      <field>
+        <aggregate>temp_media</aggregate>
+        <subject>temperatura</subject>
+        <type>AVERAGE</type>
+        <valuefield/>
+      </field>
+      <field>
+        <aggregate>temp_min</aggregate>
+        <subject>temperatura</subject>
+        <type>MIN</type>
+        <valuefield/>
+      </field>
+      <field>
+        <aggregate>temp_max</aggregate>
+        <subject>temperatura</subject>
+        <type>MAX</type>
+        <valuefield/>
+      </field>
+      <field>
+        <aggregate>pm2_5_media</aggregate>
+        <subject>pm2_5</subject>
+        <type>AVERAGE</type>
+        <valuefield/>
+      </field>
+      <field>
+        <aggregate>pm2_5_max</aggregate>
+        <subject>pm2_5</subject>
+        <type>MAX</type>
+        <valuefield/>
+      </field>
+      <field>
+        <aggregate>pm10_media</aggregate>
+        <subject>pm10</subject>
+        <type>AVERAGE</type>
+        <valuefield/>
+      </field>
+    </fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>416</xloc>
+      <yloc>352</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
   <step>
     <name>Table input</name>
     <type>TableInput</type>
@@ -839,85 +922,6 @@ ORDER BY
     </GUI>
   </step>
   <step>
-    <name>Group by</name>
-    <type>GroupBy</type>
-    <description/>
-    <distribute>Y</distribute>
-    <custom_distribution/>
-    <copies>1</copies>
-    <partitioning>
-      <method>none</method>
-      <schema_name/>
-    </partitioning>
-    <all_rows>N</all_rows>
-    <ignore_aggregate>N</ignore_aggregate>
-    <field_ignore/>
-    <directory>%%java.io.tmpdir%%</directory>
-    <prefix>grp</prefix>
-    <add_linenr>N</add_linenr>
-    <linenr_fieldname/>
-    <give_back_row>N</give_back_row>
-    <group>
-      <field>
-        <name>data</name>
-      </field>
-      <field>
-        <name>local</name>
-      </field>
-    </group>
-    <fields>
-      <field>
-        <aggregate>temp_media</aggregate>
-        <subject>temperatura</subject>
-        <type>AVERAGE</type>
-        <valuefield/>
-      </field>
-      <field>
-        <aggregate>temp_min</aggregate>
-        <subject>temperatura</subject>
-        <type>MIN</type>
-        <valuefield/>
-      </field>
-      <field>
-        <aggregate>temp_max</aggregate>
-        <subject>temperatura</subject>
-        <type>MAX</type>
-        <valuefield/>
-      </field>
-      <field>
-        <aggregate>pm2_5_media</aggregate>
-        <subject>pm2_5</subject>
-        <type>AVERAGE</type>
-        <valuefield/>
-      </field>
-      <field>
-        <aggregate>pm2_5_max</aggregate>
-        <subject>pm2_5</subject>
-        <type>MAX</type>
-        <valuefield/>
-      </field>
-      <field>
-        <aggregate>pm10_media</aggregate>
-        <subject>pm10</subject>
-        <type>AVERAGE</type>
-        <valuefield/>
-      </field>
-    </fields>
-    <attributes/>
-    <cluster_schema/>
-    <remotesteps>
-      <input>
-      </input>
-      <output>
-      </output>
-    </remotesteps>
-    <GUI>
-      <xloc>416</xloc>
-      <yloc>352</yloc>
-      <draw>Y</draw>
-    </GUI>
-  </step>
-  <step>
     <name>Table output 2</name>
     <type>TableOutput</type>
     <description/>
@@ -947,12 +951,36 @@ ORDER BY
     <return_field/>
     <fields>
       <field>
+        <column_name>data</column_name>
+        <stream_name>data</stream_name>
+      </field>
+      <field>
         <column_name>local</column_name>
         <stream_name>local</stream_name>
       </field>
       <field>
-        <column_name>data</column_name>
-        <stream_name>data</stream_name>
+        <column_name>temp_media</column_name>
+        <stream_name>temp_media</stream_name>
+      </field>
+      <field>
+        <column_name>temp_min</column_name>
+        <stream_name>temp_min</stream_name>
+      </field>
+      <field>
+        <column_name>temp_max</column_name>
+        <stream_name>temp_max</stream_name>
+      </field>
+      <field>
+        <column_name>pm2_5_media</column_name>
+        <stream_name>pm2_5_media</stream_name>
+      </field>
+      <field>
+        <column_name>pm2_5_max</column_name>
+        <stream_name>pm2_5_max</stream_name>
+      </field>
+      <field>
+        <column_name>pm10_media</column_name>
+        <stream_name>pm10_media</stream_name>
       </field>
     </fields>
     <attributes/>
